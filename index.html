@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Сапёр</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="game">
+    <div class="top">
+        <div id="bombs"> 0</div>
+
+        <select id="level">
+            <option value="easy">Лёгкий</option>
+            <option value="medium">Средний</option>
+            <option value="hard">Сложный</option>
+        </select>
+
+        <button id="restart"><img src="hqdefault.jpg" width="25"></button>
+    </div>
+
+    <div id="message" class="hidden"></div>
+    <div id="board"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
