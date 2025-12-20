@@ -11,45 +11,76 @@ const levels = {
 };
 
 let cells, rows, cols, bombs, flags, firstClick, gameOver;
+let cellSize = 32;
 
 restart.onclick = level.onchange = start;
 
 function start() {
     [rows, cols, bombs] = levels[level.value];
-    board.innerHTML = "";
-    board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
+    board.innerHTML = "";
     flags = 0;
     firstClick = true;
     gameOver = false;
+
     message.className = "hidden";
     bombsText.textContent = `✹ ${bombs}`;
 
+    resizeCells();
+    board.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+
     cells = Array(rows * cols).fill().map((_, i) => ({
-        bomb: false, open: false, flag: false, count: 0, i
+        i, bomb: false, open: false, flag: false, count: 0
     }));
 
     cells.forEach(c => {
         const el = document.createElement("div");
         el.className = "cell";
-        el.oncontextmenu = e => (e.preventDefault(), flag(c, el));
+        el.style.width = el.style.height = cellSize + "px";
+
         el.onclick = () => open(c, el);
+        el.oncontextmenu = e => (e.preventDefault(), toggleFlag(c, el));
         addTouch(el, c);
+
         c.el = el;
         board.appendChild(el);
     });
 }
 
+function resizeCells() {
+    const maxWidth = window.innerWidth - 30;
+    const maxHeight = window.innerHeight - 150;
+    cellSize = Math.floor(Math.min(
+        maxWidth / cols,
+        maxHeight / rows,
+        32
+    ));
+}
+
 function addTouch(el, c) {
-    let t;
-    el.ontouchstart = () => t = setTimeout(() => flag(c, el), 500);
-    el.ontouchend = () => clearTimeout(t);
+    let timer, moved = false;
+
+    el.addEventListener("touchstart", e => {
+        if (gameOver) return;
+        moved = false;
+        timer = setTimeout(() => {
+            toggleFlag(c, el);
+            moved = true;
+        }, 450);
+    });
+
+    el.addEventListener("touchmove", () => moved = true);
+
+    el.addEventListener("touchend", () => {
+        clearTimeout(timer);
+        if (!moved) open(c, el);
+    });
 }
 
 function placeBombs(exclude) {
     let placed = 0;
     while (placed < bombs) {
-        let r = Math.random() * cells.length | 0;
+        const r = Math.random() * cells.length | 0;
         if (!cells[r].bomb && r !== exclude) {
             cells[r].bomb = true;
             placed++;
@@ -62,12 +93,12 @@ function placeBombs(exclude) {
 
 function neighbors(i) {
     let x = i % cols, y = i / cols | 0, n = [];
-    for (let dx=-1; dx<=1; dx++)
-        for (let dy=-1; dy<=1; dy++) {
+    for (let dx = -1; dx <= 1; dx++)
+        for (let dy = -1; dy <= 1; dy++) {
             if (!dx && !dy) continue;
-            let nx=x+dx, ny=y+dy;
-            if (nx>=0 && ny>=0 && nx<cols && ny<rows)
-                n.push(ny*cols+nx);
+            let nx = x + dx, ny = y + dy;
+            if (nx >= 0 && ny >= 0 && nx < cols && ny < rows)
+                n.push(ny * cols + nx);
         }
     return n;
 }
@@ -85,15 +116,13 @@ function open(c, el) {
 
     if (c.bomb) return lose(el);
 
-    if (c.count)
-        el.textContent = c.count;
-    else
-        neighbors(c.i).forEach(i => open(cells[i], cells[i].el));
+    if (c.count) el.textContent = c.count;
+    else neighbors(c.i).forEach(i => open(cells[i], cells[i].el));
 
     checkWin();
 }
 
-function flag(c, el) {
+function toggleFlag(c, el) {
     if (c.open || gameOver) return;
     c.flag = !c.flag;
     el.textContent = c.flag ? "✕" : "";
@@ -110,7 +139,7 @@ function lose(el) {
 }
 
 function checkWin() {
-    if (cells.filter(c => c.open).length === rows*cols - bombs) {
+    if (cells.filter(c => c.open).length === rows * cols - bombs) {
         gameOver = true;
         message.textContent = "Вы выиграли";
         message.className = "win";
@@ -118,3 +147,4 @@ function checkWin() {
 }
 
 start();
+window.onresize = start;
