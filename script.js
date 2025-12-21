@@ -38,9 +38,12 @@ function start() {
         el.className = "cell";
         el.style.width = el.style.height = cellSize + "px";
 
-        el.onclick = () => open(c, el);
-        el.oncontextmenu = e => (e.preventDefault(), toggleFlag(c, el));
-        addTouch(el, c);
+        setupPointerEvents(el, c);
+
+        el.oncontextmenu = e => {
+            e.preventDefault();
+            toggleFlag(c, el);
+        };
 
         c.el = el;
         board.appendChild(el);
@@ -48,32 +51,38 @@ function start() {
 }
 
 function resizeCells() {
-    const maxWidth = window.innerWidth - 30;
-    const maxHeight = window.innerHeight - 150;
-    cellSize = Math.floor(Math.min(
-        maxWidth / cols,
-        maxHeight / rows,
-        32
-    ));
+    const maxW = window.innerWidth - 30;
+    const maxH = window.innerHeight - 160;
+    cellSize = Math.floor(Math.min(maxW / cols, maxH / rows, 32));
 }
 
-function addTouch(el, c) {
-    let timer, moved = false;
+function setupPointerEvents(el, c) {
+    let timer = null;
+    let longPress = false;
 
-    el.addEventListener("touchstart", e => {
+    el.addEventListener("pointerdown", e => {
         if (gameOver) return;
-        moved = false;
+        if (e.pointerType === "mouse") return;
+
+        longPress = false;
         timer = setTimeout(() => {
             toggleFlag(c, el);
-            moved = true;
+            longPress = true;
         }, 450);
+
+        el.setPointerCapture(e.pointerId);
     });
 
-    el.addEventListener("touchmove", () => moved = true);
-
-    el.addEventListener("touchend", () => {
+    el.addEventListener("pointerup", e => {
         clearTimeout(timer);
-        if (!moved) open(c, el);
+        if (e.pointerType === "mouse") return;
+
+        if (!longPress) open(c, el);
+        el.releasePointerCapture(e.pointerId);
+    });
+
+    el.addEventListener("click", () => {
+        if (!gameOver) open(c, el);
     });
 }
 
