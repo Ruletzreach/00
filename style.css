@@ -72,13 +72,3 @@ body {
     display: none;
 }
 
-.mobile-only {
-    display: none;
-}
-
-@media (pointer: coarse) {
-    .mobile-only {
-        display: inline-block;
-    }
-}
-

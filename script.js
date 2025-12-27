@@ -6,14 +6,14 @@ const message = document.getElementById("message");
 const modeBtn = document.getElementById("mode");
 
 const levels = {
-    easy: [9, 9, 10],
+    easy:   [9, 9, 10],
     medium: [16, 16, 40],
-    hard: [16, 30, 99]
+    hard:   [30, 16, 99]
 };
 
 let cells, rows, cols, bombs, flags, firstClick, gameOver;
 let cellSize = 32;
-let mode = "open"; 
+let mode = "open";
 
 restart.onclick = level.onchange = start;
 
@@ -48,8 +48,8 @@ function start() {
         el.onclick = () => {
             if (gameOver) return;
 
-            if (isMobile()) {
-                mode === "flag" ? toggleFlag(c, el) : open(c, el);
+            if (mode === "flag") {
+                toggleFlag(c, el);
             } else {
                 open(c, el);
             }
@@ -57,7 +57,7 @@ function start() {
 
         el.oncontextmenu = e => {
             e.preventDefault();
-            if (!isMobile()) toggleFlag(c, el);
+            toggleFlag(c, el);
         };
 
         c.el = el;
@@ -69,10 +69,6 @@ function resizeCells() {
     const maxW = window.innerWidth - 30;
     const maxH = window.innerHeight - 160;
     cellSize = Math.floor(Math.min(maxW / cols, maxH / rows, 32));
-}
-
-function isMobile() {
-    return window.matchMedia("(pointer: coarse)").matches;
 }
 
 function placeBombs(exclude) {
@@ -123,7 +119,7 @@ function open(c, el) {
 function toggleFlag(c, el) {
     if (c.open || gameOver) return;
     c.flag = !c.flag;
-    el.textContent = c.flag ? "✕" : "";
+    el.textContent = c.flag ? "✹" : "";
     flags += c.flag ? 1 : -1;
     bombsText.textContent = `✹ ${bombs - flags}`;
 }
