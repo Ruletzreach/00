@@ -24,13 +24,13 @@ body {
     background: #bdbdbd;
     border: 2px inset #fff;
     padding: 5px;
+    gap: 5px;
 }
 
 #board {
     margin-top: 8px;
     display: grid;
     border: 3px inset #fff;
-    touch-action: none; /* ВАЖНО */
 }
 
 .cell {
@@ -71,3 +71,14 @@ body {
 .hidden {
     display: none;
 }
+
+.mobile-only {
+    display: none;
+}
+
+@media (pointer: coarse) {
+    .mobile-only {
+        display: inline-block;
+    }
+}
+

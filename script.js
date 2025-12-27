@@ -3,6 +3,7 @@ const bombsText = document.getElementById("bombs");
 const level = document.getElementById("level");
 const restart = document.getElementById("restart");
 const message = document.getElementById("message");
+const modeBtn = document.getElementById("mode");
 
 const levels = {
     easy: [9, 9, 10],
@@ -12,8 +13,14 @@ const levels = {
 
 let cells, rows, cols, bombs, flags, firstClick, gameOver;
 let cellSize = 32;
+let mode = "open"; 
 
 restart.onclick = level.onchange = start;
+
+modeBtn.onclick = () => {
+    mode = mode === "open" ? "flag" : "open";
+    modeBtn.textContent = mode === "open" ? "✹" : "✕";
+};
 
 function start() {
     [rows, cols, bombs] = levels[level.value];
@@ -38,11 +45,19 @@ function start() {
         el.className = "cell";
         el.style.width = el.style.height = cellSize + "px";
 
-        setupPointerEvents(el, c);
+        el.onclick = () => {
+            if (gameOver) return;
+
+            if (isMobile()) {
+                mode === "flag" ? toggleFlag(c, el) : open(c, el);
+            } else {
+                open(c, el);
+            }
+        };
 
         el.oncontextmenu = e => {
             e.preventDefault();
-            toggleFlag(c, el);
+            if (!isMobile()) toggleFlag(c, el);
         };
 
         c.el = el;
@@ -56,34 +71,8 @@ function resizeCells() {
     cellSize = Math.floor(Math.min(maxW / cols, maxH / rows, 32));
 }
 
-function setupPointerEvents(el, c) {
-    let timer = null;
-    let longPress = false;
-
-    el.addEventListener("pointerdown", e => {
-        if (gameOver) return;
-        if (e.pointerType === "mouse") return;
-
-        longPress = false;
-        timer = setTimeout(() => {
-            toggleFlag(c, el);
-            longPress = true;
-        }, 450);
-
-        el.setPointerCapture(e.pointerId);
-    });
-
-    el.addEventListener("pointerup", e => {
-        clearTimeout(timer);
-        if (e.pointerType === "mouse") return;
-
-        if (!longPress) open(c, el);
-        el.releasePointerCapture(e.pointerId);
-    });
-
-    el.addEventListener("click", () => {
-        if (!gameOver) open(c, el);
-    });
+function isMobile() {
+    return window.matchMedia("(pointer: coarse)").matches;
 }
 
 function placeBombs(exclude) {
@@ -157,3 +146,4 @@ function checkWin() {
 
 start();
 window.onresize = start;
+
