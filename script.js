@@ -18,8 +18,10 @@ let mode = "open";
 restart.onclick = level.onchange = start;
 
 modeBtn.onclick = () => {
+    const imageElement = document.getElementById('myImage');
     mode = mode === "open" ? "flag" : "open";
-    modeBtn.textContent = mode === "open" ? "✹" : "✕";
+   
+    imageElement.src = mode === "open" ? 'bomba.png': "flag.png";
 };
 
 function start() {
@@ -119,7 +121,7 @@ function open(c, el) {
 function toggleFlag(c, el) {
     if (c.open || gameOver) return;
     c.flag = !c.flag;
-    el.textContent = c.flag ? "✹" : "";
+    el.textContent = c.flag ? "✕" : "";
     flags += c.flag ? 1 : -1;
     bombsText.textContent = `✹ ${bombs - flags}`;
 }
